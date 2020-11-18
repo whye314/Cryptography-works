@@ -65,7 +65,16 @@ int main(int argc, char ** args){
     }
     fclose(mess_fd);
     head = head->next;
-    target_fd = fopen(target_path, "wb");//windows必须是wb模式打开二进制文件，否则遇到0x0a时会被作为换行，被自动替换为0x0d0a
+
+
+    #if _WIN64  //识别windows平台
+        target_fd = fopen(target_path, "wb");//windows必须是wb模式打开二进制文件，否则遇到0x0a时会被作为换行，被自动替换为0x0d0a
+    #elif __linux__  //识别linux平台
+        target_fd = fopen(target_path, "w");
+    #endif
+
+
+    
     unsigned char * tmps;
     tmps = (unsigned char *)calloc(1, 8 * sizeof(unsigned char));
     while(head!=NULL){

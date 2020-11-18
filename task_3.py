@@ -67,8 +67,8 @@ if __name__ == '__main__':
 #encode
     enc = list(encode(key, n, t))
     for i,d,k in enc:
-        print(str(i+1) + ' d: ' + str(d), end = '')
-        print(' k: ' + str(k))
+        print(str(i+1) + ' d: ' + str(d))
+        print(' k: ' + str(k) + '\n')
     
 #decode
     a = []
