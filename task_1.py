@@ -21,7 +21,7 @@ def gcd(a, m):
 
 def check(m):
     for _times in range(1000):
-        a = random.randint(0, m-2)
+        a = random.randint(2, m-2)
         if check_once(a, m) == False:
             return False
     return True
