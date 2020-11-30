@@ -73,6 +73,24 @@ int1024 * int1024_charsub(int1024 * a, unsigned char b){
     return result;
 }
 
+int1024 * int1024_charadd(int1024 * a, unsigned char b){
+    int1024 * tempb, * result;
+    tempb = (int1024 *)calloc(1, sizeof(int1024));
+    tempb->s[MAX_SIZE-1] = b;
+    result = int1024_add(a, tempb);
+    free(tempb);
+    return result;
+}
+
+int1024 * int1024_charaddto(int1024 * a, unsigned char b){
+    int1024 * tempb;
+    tempb = (int1024 *)calloc(1, sizeof(int1024));
+    tempb->s[MAX_SIZE-1] = b;
+    int1024_addto(a, tempb);
+    free(tempb);
+    return a;
+}
+
 int1024 * int1024_moveleftto(int1024 * a, unsigned char b){
     if(b>=MAX_SIZE){
         memset(a, 0, sizeof(int1024));
@@ -173,13 +191,53 @@ int1024 * int1024_multo(int1024 * a, int1024 * b){
     return a;
 }
 
-int1024 * int1024_pow(int1024 * a, int1024 * b, int1024 * c)
+int1024 * int1024_div(int1024 * a, int1024 * b){
+    int1024 * result;
+    result = (int1024 *)calloc(1, sizeof(int1024));
+    int1024 * ta;
+    ta = (int1024 *)calloc(1, sizeof(int1024));
+    memcpy(ta, a, sizeof(int1024));
+    int1024 * tempa;
+    tempa = (int1024 *)calloc(1, sizeof(int1024));
+    while(int1024_cmp(ta, b) > 0){
+        memcpy(tempa, ta, sizeof(int1024));
+        if(int1024_cmp(int1024_moverigntto(tempa, 1), b) > 0){
+            int1024 * tempb;
+            memcpy(tempb, b, sizeof(int1024));
+            int1024_moveleftto(tempb, 1);
+            int1024_subto(ta, tempb);
+            int1024_charaddto(result, 128);
+            int1024_charaddto(result, 128);
+            free(tempb);
+        }
+        int1024_subto(ta, b);
+        int1024_charaddto(result, 1);
+    }
+    free(tempa);
+    free(ta);
+    return result;
+}
+
+int1024 * int1024_powto(int1024 * a, int1024 * b, int1024 * c)
 //(a^b)%c, a and b will be changed
 //a will be return value, b will be 1;
 {
+    int1024 * tempa;
+    tempa = (int1024 *)calloc(1, sizeof(int1024));
     while(int1024_cmp(a, c) > 0){// a = a%c
-        
+
+        memcpy(tempa, a, sizeof(int1024));
+        if(int1024_cmp(int1024_moverigntto(tempa, 1), c) > 0){
+            int1024 * tempc;
+            memcpy(tempc, c, sizeof(int1024));
+            int1024_moveleftto(tempc, 1);
+            int1024_subto(a, tempc);
+            
+            free(tempc);
+        }
+        int1024_subto(a, c);
     }
+    free(tempa);
     if(int1024_charcmp(b, 0)){
         memset(a, 0, sizeof(int1024));
         return a;
@@ -188,21 +246,27 @@ int1024 * int1024_pow(int1024 * a, int1024 * b, int1024 * c)
         return a;
     }
     if((b->s[MAX_SIZE - 1]%2) > 0){
-        int1024 * tempa;
+        //int1024 * tempa;
         tempa = (int1024 *)calloc(1, sizeof(int1024));
         memcpy(tempa, a, sizeof(int1024));
-        int1024_pow(a, int1024_charsubto(b, 1), c);
+        int1024_powto(a, int1024_charsubto(b, 1), c);
         int1024_multo(a, tempa);
         free(tempa);
-        return int1024_pow(a, (int1024 *)1, c);
+        return int1024_powto(a, (int1024 *)1, c);
     }
     else{
-        int1024 * tempa;
+        //int1024 * tempa;
         tempa = int1024_mul(a, a);
         memcpy(a, tempa, sizeof(int1024));
         free(tempa);
-        int1024_moverigntto(b, 1);
-        return int1024_pow(a, b, c);
+        int i = 0;
+        unsigned char over = 0;
+        while(i<MAX_SIZE){
+            unsigned temp = b->s[i]/2 + over<<7;
+            over = b->s[i]%2;
+            b->s[i] = temp;
+        }
+        return int1024_powto(a, b, c);
     }
 }
 
@@ -230,7 +294,7 @@ int int1024_rabin(int1024 * n){
     while(i-->0){
         a = int1024_random(128);
         if(int1024_cmp(a, n) > 0){
-            int1024_pow(a, (int1024 *)1, n);
+            int1024_powto(a, (int1024 *)1, n);
         }
         int q = 0;
         int1024 * r;
@@ -242,7 +306,7 @@ int int1024_rabin(int1024 * n){
             int1024 * tempa;
             tempa = (int1024 *)calloc(1, sizeof(int1024));
             memcpy(tempa, a, sizeof(int1024));
-            if(int1024_charcmp(int1024_pow(tempa, r, n), 1)){
+            if(int1024_charcmp(int1024_powto(tempa, r, n), 1)){
                 q++;
                 int1024_moveleftto(r, 1);
                 free(tempa);
@@ -252,7 +316,7 @@ int int1024_rabin(int1024 * n){
                 continue;
             }
             memcpy(tempa, a, sizeof(int1024));
-            if(!int1024_cmp(int1024_pow(tempa, r, n), n_1)){
+            if(!int1024_cmp(int1024_powto(tempa, r, n), n_1)){
                 free(tempa);
                 break;
             }
@@ -281,6 +345,58 @@ int1024 * int1024_random(int len){
     fread(result->s, 1, len, rfd);
     fclose(rfd);
     return result;
+}
+
+int1024 * int1024_exgcd(int1024 * a, int1024 * b){// return ax=1(mod b)
+    if(a>=b){
+        int1024_powto(a, 1, b);
+    }
+    int1024 * x[3];
+    x[0] = int1024_charaddto((int1024 *)calloc(1, sizeof(int1024)), 1);
+    x[1] = (int1024 *)calloc(1, sizeof(int1024));
+    x[2] = (int1024 *)calloc(1, sizeof(int1024));
+    memcpy(x[2], b, sizeof(int1024));
+    int1024 * y[3];
+    y[0] = (int1024 *)calloc(1, sizeof(int1024));
+    y[1] = int1024_charaddto((int1024 *)calloc(1, sizeof(int1024)), 1);
+    y[2] = (int1024 *)calloc(1, sizeof(int1024));
+    memcpy(x[2], a, sizeof(int1024));
+    while(1){
+        if(int1024_charcmp(y[2], 0)){
+            int i = 3;
+            while(i-->0){
+                free(x[i]);
+                free(y[i]);
+            }
+            return 0;
+        } 
+        if(int1024_charcmp(y[2], 1)){
+            int i = 3;
+            while(i-->0){
+                if(i==1) free(x[i]);
+                else{
+                    free(x[i]);
+                    free(y[i]);
+                }
+            }
+            return y[1];
+        }
+        int1024 * q;
+        q = int1024_div(x[2], y[2]);
+        int i = 3;
+        //int1024 * t[3];
+        while(i-->3){
+            int1024 * qy;
+            qy = int1024_mul(q, y[i]);
+            int1024 * t;
+            t = int1024_sub(x[i], qy);
+            free(x[i]);
+            free(qy);
+            x[i] = y[i];
+            y[i] = t;
+        }
+        free(q);
+    }
 }
 
 int main(int argc, char ** args){
