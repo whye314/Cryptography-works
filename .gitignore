@@ -1,4 +1,6 @@
-__pycache__
+__pycache__/*
 *.pyc
 *.exe
-test*
+test.*
+test
+*.out
