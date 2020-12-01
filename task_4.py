@@ -52,11 +52,11 @@ class Alice:
 
     def find_g(self, p):
        for i in range(2, p):
-            if 2 == 2:
+            if p == 2:
                return 1
-            elif i == 3:
+            elif p == 3:
                 return 2
-            elif i == 4:
+            elif p == 4:
                 return 3
             else:
                 for j in self.p_prime(p-1):

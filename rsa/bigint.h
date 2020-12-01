@@ -5,12 +5,12 @@
 #define MAX(a, b) a>b?a:b
 #define OVERFLOWUCHAR(a, b) (a+b)>255?1:0
 
-struct _intbig_struct{
+struct _bigint_struct{
     unsigned char s[MAX_SIZE];
     unsigned overflow;
 };
 
-typedef struct _intbig_struct int1024;
+typedef struct _bigint_struct int1024;
 
 
 
@@ -25,11 +25,13 @@ int1024 * int1024_charaddto(int1024 * a, unsigned char b);
 int1024 * int1024_moveleftto(int1024 * a, unsigned char b);
 int1024 * int1024_moverigntto(int1024 * a, unsigned char b);
 int1024 * int1024_add(int1024 * a, int1024 * b);
+int1024 * int1024_addto(int1024 * a, int1024 * b);
 int1024 * int1024_sub(int1024 * a, int1024 * b);
 int1024 * int1024_subto(int1024 * a, int1024 * b);
 int1024 * int1024_mul(int1024 * a, int1024 * b);
 int1024 * int1024_multo(int1024 * a, int1024 * b);
 int1024 * int1024_div(int1024 * a, int1024 * b);
+int1024 * int1024_divto(int1024 * a, int1024 * b);
 int1024 * int1024_powto(int1024 * a, int1024 * b, int1024 * c);
 int1024 * int1024_get_prime(int len);
 int int1024_rabin(int1024 * n);
