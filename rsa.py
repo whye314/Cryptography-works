@@ -92,14 +92,21 @@ def create_key():
 if __name__ == '__main__':
     a = alice()
     m = 123452346524564256245908312456308497560238475620438756924837569287436592837456918322438759623847569137845691387465
+    print('ciphertext: ', end='')
     print(a.en(m))
     print()
+    print('p: ', end='')
     print(a.p)
     print()
+    print('q: ', end='')
     print(a.q)
     print()
+    print('e: ', end='')
     print(a.e)
     print()
+    print('d: ', end='')
     print(a.d)
+    print()
+    print('message: ', end='')
     print(a.de(a.en(m)))
 

@@ -13,6 +13,12 @@ struct _bigint_struct{
 typedef struct _bigint_struct int1024;
 
 
+struct _bigint2_struct{
+    unsigned char s[2*MAX_SIZE];
+    unsigned overflow;
+};
+
+typedef struct _bigint2_struct in2048;
 
 int int1024_cmp(int1024 * a, int1024 * b);
 int int1024_charcmp(int1024 * a, unsigned char b);

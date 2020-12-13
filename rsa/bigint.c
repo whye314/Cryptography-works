@@ -272,12 +272,15 @@ int1024 * int1024_divto(int1024 * a, int1024 * b){
     return a;
 }
 
+int1024 * int1024_mulmod(int1024 * a, int1024 * b, int1024 * c){
+    
+}
+
 int1024 * int1024_powto(int1024 * a, int1024 * b, int1024 * c)
 //(a^b)%c, a and b will be changed
 //a will be return value, b will be 1;
 {
-    int1024 * tempa;
-    tempa = (int1024 *)calloc(1, sizeof(int1024));
+
     // while(int1024_cmp(a, c) >= 0){
     //     int i = MAX_SIZE;
     //     while(i-->0){
@@ -310,23 +313,28 @@ int1024 * int1024_powto(int1024 * a, int1024 * b, int1024 * c)
     //     }
         
     // }
-    int i = MAX_SIZE;
-    int1024 * tempc;
-    tempc = (int1024 *)calloc(1, sizeof(int1024));
-    while(i-->0){
-        memcpy(tempa, a, sizeof(int1024));
-        int1024_moverigntto(tempa, i);
-        memcpy(tempc, c, sizeof(int1024));
-        int1024_moveleftto(tempc, i);
-        while(int1024_cmp(tempa, c) >= 0){
-            int1024_subto(a, tempc);
-            int1024_subto(tempa, c);
-        }
+    int1024 * tempa;
+    if(int1024_cmp(a, c) >= 0){   //a=a%c     
         
-    }
-    free(tempc);
+        tempa = (int1024 *)calloc(1, sizeof(int1024));
+        int i = MAX_SIZE;
+        int1024 * tempc;
+        tempc = (int1024 *)calloc(1, sizeof(int1024));
+        while(i-->0){
+            memcpy(tempa, a, sizeof(int1024));
+            int1024_moverigntto(tempa, i);
+            memcpy(tempc, c, sizeof(int1024));
+            int1024_moveleftto(tempc, i);
+            while(int1024_cmp(tempa, c) >= 0){
+                int1024_subto(a, tempc);
+                int1024_subto(tempa, c);
+            }
+            
+        }
+        free(tempc);
 
-    free(tempa);
+        free(tempa);
+    }
     if(((long long)b == 1) || int1024_charcmp(b, 1)){
         return a;
     }
@@ -335,29 +343,43 @@ int1024 * int1024_powto(int1024 * a, int1024 * b, int1024 * c)
         return a;
     }
 
-    if((b->s[MAX_SIZE - 1]%2) > 0){
-        //int1024 * tempa;
-        tempa = (int1024 *)calloc(1, sizeof(int1024));
-        memcpy(tempa, a, sizeof(int1024));
-        int1024_powto(a, int1024_charsubto(b, 1), c);
-        int1024_multo(a, tempa);
-        free(tempa);
-        return int1024_powto(a, (int1024 *)1, c);
-    }
-    else{
-        //int1024 * tempa;
-        tempa = int1024_mul(a, a);
-        memcpy(a, tempa, sizeof(int1024));
-        free(tempa);
-        int i = 0;
-        unsigned char over = 0;
-        while(i<MAX_SIZE){
-            unsigned temp = b->s[i]/2 + over<<7;
-            over = b->s[i]%2;
-            b->s[i] = temp;
-            i++;
+    // if((b->s[MAX_SIZE - 1]%2) > 0){
+    //     //int1024 * tempa;
+    //     tempa = (int1024 *)calloc(1, sizeof(int1024));
+    //     memcpy(tempa, a, sizeof(int1024));
+    //     int1024_powto(a, int1024_charsubto(b, 1), c);
+    //     int1024_multo(a, tempa);
+    //     free(tempa);
+    //     return int1024_powto(a, (int1024 *)1, c);
+    // }
+    // else{
+    //     //int1024 * tempa;
+    //     tempa = int1024_mul(a, a);
+    //     memcpy(a, tempa, sizeof(int1024));
+    //     free(tempa);
+    //     int i = 0;
+    //     unsigned char over = 0;
+    //     while(i<MAX_SIZE){
+    //         unsigned temp = b->s[i]/2 + over<<7;
+    //         over = b->s[i]%2;
+    //         b->s[i] = temp;
+    //         i++;
+    //     }
+    //     return int1024_powto(a, b, c);
+    // }
+
+
+    int1024 * result;
+    result = (int1024 *)calloc(1, sizeof(int1024));
+    result->s[127] = 1;
+
+    while(int1024_charcmp(b, 0)){
+        if((b->s[127]%2) == 1){
+            result = int1024_mulmod(result, a, c);
         }
-        return int1024_powto(a, b, c);
+        a = (a, a, c);
+
+        int1024_chardivto(b,2);
     }
 }
 
@@ -398,14 +420,19 @@ int int1024_rabin(int1024 * n){
             int1024 * tempa;
             tempa = (int1024 *)calloc(1, sizeof(int1024));
             memcpy(tempa, a, sizeof(int1024));
-            while(int1024_charcmp(int1024_powto(tempa, r, n), 1)){
+            int1024 * tempr;
+            tempr = (int1024 *)calloc(1, sizeof(int1024));
+            memcpy(tempr, r, sizeof(int1024));
+            while(int1024_charcmp(int1024_powto(tempa, tempr, n), 1)){
                 q++;
                 //int1024_moveleftto(r, 1);
-                int1024_divto(r, 2);
+                int1024_chardivto(r, 2);
                 //free(tempa);
                 if(r->s[MAX_SIZE - 1]%2 > 0){
                     break;
                 }
+                memcpy(tempr, r, sizeof(int1024));
+                memcpy(tempa, a, sizeof(int1024));
                 continue;
             }
             memcpy(tempa, a, sizeof(int1024));
