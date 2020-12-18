@@ -44,13 +44,13 @@ class Alice:
         P2 = self.mul(r, K)
         X2 = P2.x.to_bytes(self.l, 'big')
         Y2 = P2.y.to_bytes(self.l, 'big')
-        t = self.KDF(X2+Y2, self.l)
+        t = self.KDF(X2+Y2, len(message))
         if int.from_bytes(t, 'big') == 0:
             print('KDF error')
             exit(1)
-        M = (self.l-len(M))*b'\x00' + M
+        #M = (self.l-len(M))*b'\x00' + M
         C2 = int.from_bytes(M, 'big') ^ int.from_bytes(t, 'big')
-        C2 = C2.to_bytes(self.l, 'big')
+        C2 = C2.to_bytes(len(message), 'big')
         C3 = hashlib.md5(X2 + M + Y2).digest()
         return C1 + C2 + C3
         
@@ -65,8 +65,8 @@ class Alice:
         else:
             l = 2*self.l
         C1 = C[0:1+l]
-        C2 = C[1+l:1+l+self.l]
-        C3 = C[1+l+self.l:]
+        C2 = C[1+l:len(C)-16]
+        C3 = C[len(C) - 16:]
         C1 = self.byteTopoint(C1)
         if not pow(C1.y, 2, p)==(pow(C1.x, 3, p) + self.a*C1.x + self.b)%p:#(C1.y**2) == (C1.x**3 + self.a * C1.x + self.b):
             print('error Ciphertext 2')
@@ -78,12 +78,12 @@ class Alice:
         P2 = self.mul(self.k, C1)
         X2 = P2.x.to_bytes(self.l, 'big')
         Y2 = P2.y.to_bytes(self.l, 'big')
-        t = self.KDF(X2+Y2, self.l)
+        t = self.KDF(X2+Y2, len(message))
         if int.from_bytes(t, 'big') == 0:
             print('KDF error')
             exit(1)
         M = int.from_bytes(C2, 'big') ^ int.from_bytes(t, 'big')
-        M = M.to_bytes(self.l, 'big')
+        M = M.to_bytes(len(C2), 'big')
         u = hashlib.md5(X2 + M + Y2).digest()
         if not u == C3:
             print('error Hash check')
@@ -190,20 +190,27 @@ class Alice:
             pass
 
     def KDF(self, x, l):
-        v = 32
+        v = 16
         t = (l+v-1)//v
         H = b''
         for i in range(t):
             H += hashlib.md5(x+(i+1).to_bytes(4, 'big')).digest()
-        return H
+        return H[0:l]
 
 
 
 
 if __name__ == '__main__':
     a = Alice(100)
-    message = 'weqrgoiuhwerogiuwesdsdsdsdrtyuqa'
-    print(message)
+    c = b''
+    message = input('input the message: ')
+    print('message: ')
+    print(message, end = '\n\n')
+    # message += '\x00'*(32 - (len(message)%32))
+    # for i in range((len(message) + 31)//32):
+    #     c += a.en(message[32*i:32*(i+1)])
     c = a.en(message, a.K)
-    print(c)
-    print(a.de(c))
+    print('ciphertext: ')
+    print(c, end = '\n\n')
+    print('decrypt message: ')
+    print(str(a.de(c), 'utf-8'))
